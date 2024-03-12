@@ -108,7 +108,7 @@ export const Wordle: React.FC = () => {
                       },
                     }}
                     key={index2}
-                    className={`border w-20 h-20 flex justify-center items-center m-2 text-white text-xl font-semibold ${
+                    className={`border w-10 h-10 md:w-20 md:h-20 flex justify-center items-center m-2 text-white text-xl font-semibold ${
                       character ? bgColor : ""
                     }`}
                   >
@@ -144,7 +144,7 @@ export const Wordle: React.FC = () => {
 
         {feedbackMessage && (
           <div
-            className={`m-2 text-xl ${
+            className={`m-2 text-lg md:text-xl ${
               !isWinningGuess ? "text-red-800" : "text-white"
             }`}
           >
