@@ -1,5 +1,5 @@
 import React from "react";
-import { WORD_LENGTH } from "./helper";
+import { ALPHABET_REGEX, WORD_LENGTH } from "./helper";
 
 type InputPropsType = {
   inputRef: React.RefObject<HTMLInputElement>;
@@ -14,6 +14,14 @@ export const Input: React.FC<InputPropsType> = ({
   onChange,
   disabled,
 }) => {
+  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const inputValue = event.target.value;
+
+    if (ALPHABET_REGEX.test(inputValue) || inputValue === "") {
+      onChange(event);
+    }
+  }
+
   return (
     <input
       autoFocus
@@ -22,9 +30,9 @@ export const Input: React.FC<InputPropsType> = ({
       minLength={WORD_LENGTH}
       maxLength={WORD_LENGTH}
       value={guess}
-      onChange={onChange}
       className="border border-gray-300 w-40 text-sm px-2 rounded mx-4 disabled:cursor-not-allowed"
       disabled={disabled}
+      onInput={handleInputChange}
     />
   );
 };

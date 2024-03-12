@@ -3,6 +3,8 @@ export const NO_OF_COLS = 5;
 export const WORD_LENGTH = 5;
 export const WINNING_MESSAGE = "Woohooo... You have guessed the correct word !";
 export const ERROR_MESSAGE = "No duplicates allowed"
+export const ALPHABET_REGEX = /^[a-zA-Z]+$/;
+
 
 const WORDS = ['APPLE', 'TOWER', 'PAINT', 'AUNTY', 'RADIO', 'PESKY']
 
