@@ -1,94 +1,150 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { NO_OF_COLS, NO_OF_ROWS, getWordOfTheDay } from "./helper";
-
-type WordlePropsType = {};
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ERROR_MESSAGE,
+  NO_OF_COLS,
+  NO_OF_ROWS,
+  WINNING_MESSAGE,
+  WORD_LENGTH,
+  findMatchingIndicesAndUpdateMap,
+  getBgColorClassName,
+  getWordOfTheDay,
+  initializeMap,
+} from "./helper";
+import { easeOut, motion } from "framer-motion";
+import { Input } from "./Input";
 
 const WORD_OF_THE_DAY = getWordOfTheDay();
-export const Wordle: React.FC<WordlePropsType> = () => {
-  const [guesses, setGuesses] = useState<Array<string>>([]);
-  const [guess, setGuess] = useState("");
-  const [message, setMessage] = useState("");
 
-  const isWinningCombination = useMemo(
-    () => guesses.includes(WORD_OF_THE_DAY),
-    [guesses]
+export const Wordle: React.FC = () => {
+  const [guessedWords, setGuessedWords] = useState<string[]>([]);
+  const [currentGuess, setCurrentGuess] = useState<string>("");
+  const [feedbackMessage, setFeedbackMessage] = useState<string>("");
+
+  const initialMapValue = initializeMap(WORD_OF_THE_DAY);
+  let myMap = new Map(initialMapValue);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const isWinningGuess = useMemo(
+    () => guessedWords.includes(WORD_OF_THE_DAY),
+    [guessedWords]
   );
 
   useEffect(() => {
-    if (guesses.includes(WORD_OF_THE_DAY)) {
-      setMessage("Woohooo... You have guessed the correct word !");
-    } else if (guess === "") {
-      setMessage("");
+    if (guessedWords.includes(WORD_OF_THE_DAY)) {
+      setFeedbackMessage(WINNING_MESSAGE);
+    } else if (currentGuess === "") {
+      setFeedbackMessage("");
     }
-  }, [guess, guesses]);
+  }, [currentGuess, guessedWords]);
+
+  const handleGuessSubmit = () => {
+    if (currentGuess.length !== 5 || guessedWords.includes(currentGuess)) {
+      setFeedbackMessage(ERROR_MESSAGE);
+      inputRef.current?.focus();
+      return;
+    }
+    //add condition to show a message when all the tries have expired
+    setGuessedWords((prev) => [...prev, currentGuess]);
+    setCurrentGuess("");
+    setFeedbackMessage("");
+    inputRef.current?.focus();
+  };
+
+  console.log({ WORD_OF_THE_DAY });
+
+  const rowsArray = Array(NO_OF_ROWS).fill("");
+  const colsArray = Array(NO_OF_COLS).fill("");
 
   return (
     <div className="min-h-screen overflow-scroll flex flex-col gap-10 justify-center items-center">
       <div>
-        {Array(NO_OF_ROWS)
-          .fill("")
-          .map((_, index1) => {
-            return (
-              <div className="flex" key={index1}>
-                {Array(NO_OF_COLS)
-                  .fill("")
-                  .map((_, index2) => {
-                    const word = guesses.length > index1 ? guesses[index1] : "";
-                    const character =
-                      word.length > 0 ? word.charAt(index2) : "";
-                    const isPerfectMatch =
-                      WORD_OF_THE_DAY.charAt(index2) === character;
-                    return (
-                      <div
-                        key={index2}
-                        className={`border w-20 h-20 flex justify-center items-center m-2 text-white text-xl font-semibold ${
-                          character
-                            ? isPerfectMatch
-                              ? "bg-green-700"
-                              : "bg-gray-600"
-                            : "bg-white"
-                        }`}
-                      >
-                        {character}
-                      </div>
-                    );
-                  })}
-              </div>
-            );
-          })}
+        {rowsArray.map((_, index1) => {
+          const word = guessedWords.length > index1 ? guessedWords[index1] : "";
+
+          myMap = new Map(initialMapValue);
+
+          const matchingIndices =
+            word.length > 0
+              ? findMatchingIndicesAndUpdateMap(word, myMap, WORD_OF_THE_DAY)
+              : [];
+
+          return (
+            <motion.div
+              variants={{
+                start: { transition: { staggerChildren: 0.1 } },
+                end: { transition: { staggerChildren: 0.1 } },
+              }}
+              transition={{
+                duration: 0.2,
+                yoyo: Infinity,
+                ease: easeOut,
+              }}
+              initial="start"
+              animate={
+                isWinningGuess && index1 === guessedWords.length - 1
+                  ? "end"
+                  : {}
+              }
+              key={index1}
+              className="flex"
+            >
+              {colsArray.map((_, index2) => {
+                const character = word.length > 0 ? word.charAt(index2) : "";
+
+                const bgColor = getBgColorClassName(
+                  index2,
+                  matchingIndices,
+                  myMap,
+                  character
+                );
+
+                return (
+                  <motion.div
+                    variants={{
+                      end: {
+                        opacity: 1,
+                        y: [0, -50, 0],
+                      },
+                    }}
+                    key={index2}
+                    className={`border w-20 h-20 flex justify-center items-center m-2 text-white text-xl font-semibold ${
+                      character ? bgColor : ""
+                    }`}
+                  >
+                    {character}
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          );
+        })}
       </div>
       <div className="flex flex-col gap-4 mx-2 text-sm items-center">
         <div>
-          <input
-            type="text"
-            minLength={5}
-            maxLength={5}
-            value={guess}
-            onChange={(e) => setGuess(e.target.value.toLocaleUpperCase())}
-            className="border border-gray-300 w-40 text-sm px-2 rounded mx-4 disabled:cursor-not-allowed"
-            disabled={isWinningCombination}
+          <Input
+            inputRef={inputRef}
+            guess={currentGuess}
+            onChange={(e) =>
+              setCurrentGuess(e.target.value.toLocaleUpperCase())
+            }
+            disabled={isWinningGuess}
           />
+
           <button
             className="border border-gray-300 px-2 py-0.5 rounded cursor-pointer disabled:cursor-not-allowed"
-            disabled={guess.length !== 5 || Boolean(message)}
-            onClick={() => {
-              if (guesses && !guesses.includes(guess)) {
-                setGuesses((prev) => [...prev, guess]);
-                setGuess("");
-                setMessage("");
-              } else {
-                setMessage("No duplicates allowed");
-              }
-            }}
+            disabled={
+              currentGuess.length !== WORD_LENGTH || Boolean(feedbackMessage)
+            }
+            onClick={handleGuessSubmit}
           >
             Submit
           </button>
         </div>
-        {message && (
-          <div
-            className={`m-2 text-xl ${!isWinningCombination && "text-red-800"}`}
-          >
-            {message}
+
+        {feedbackMessage && (
+          <div className={`m-2 text-xl ${!isWinningGuess && "text-red-800"}`}>
+            {feedbackMessage}
           </div>
         )}
       </div>
