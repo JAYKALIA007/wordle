@@ -132,7 +132,7 @@ export const Wordle: React.FC = () => {
           />
 
           <button
-            className="border border-gray-300 px-2 py-0.5 rounded cursor-pointer disabled:cursor-not-allowed"
+            className=" text-white border border-gray-300 px-2 py-0.5 rounded cursor-pointer disabled:cursor-not-allowed"
             disabled={
               currentGuess.length !== WORD_LENGTH || Boolean(feedbackMessage)
             }
@@ -143,7 +143,11 @@ export const Wordle: React.FC = () => {
         </div>
 
         {feedbackMessage && (
-          <div className={`m-2 text-xl ${!isWinningGuess && "text-red-800"}`}>
+          <div
+            className={`m-2 text-xl ${
+              !isWinningGuess ? "text-red-800" : "text-white"
+            }`}
+          >
             {feedbackMessage}
           </div>
         )}

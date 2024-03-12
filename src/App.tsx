@@ -2,7 +2,7 @@ import { Wordle } from "./Wordle";
 
 function App() {
   return (
-    <div>
+    <div className="bg-black">
       <Wordle />
     </div>
   );

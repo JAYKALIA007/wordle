@@ -57,7 +57,7 @@ export const getBgColorClassName = (
       bgColor = "bg-green-700";
     } else {
       if (map.has(character)) {
-        bgColor = "bg-yellow-700";
+        bgColor = "bg-yellow-500";
         map.set(character, map.get(character) - 1);
         if (map.get(character) === 0) {
           map.delete(character);
