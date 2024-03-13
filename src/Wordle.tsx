@@ -12,6 +12,7 @@ import {
 } from "./helper";
 import { easeOut, motion } from "framer-motion";
 import { Input } from "./Input";
+import { ConfettiAnimation } from "./Confetti";
 
 const WORD_OF_THE_DAY = getWordOfTheDay();
 
@@ -19,6 +20,7 @@ export const Wordle: React.FC = () => {
   const [guessedWords, setGuessedWords] = useState<string[]>([]);
   const [currentGuess, setCurrentGuess] = useState<string>("");
   const [feedbackMessage, setFeedbackMessage] = useState<string>("");
+  const [isCorrectGuess, setIsCorrectGuess] = useState<boolean>(false);
 
   const initialMapValue = initializeMap(WORD_OF_THE_DAY);
   let myMap = new Map(initialMapValue);
@@ -33,6 +35,7 @@ export const Wordle: React.FC = () => {
   useEffect(() => {
     if (guessedWords.includes(WORD_OF_THE_DAY)) {
       setFeedbackMessage(WINNING_MESSAGE);
+      setIsCorrectGuess(true);
     } else if (currentGuess === "") {
       setFeedbackMessage("");
     }
@@ -44,8 +47,16 @@ export const Wordle: React.FC = () => {
       inputRef.current?.focus();
       return;
     }
-    //add condition to show a message when all the tries have expired
-    setGuessedWords((prev) => [...prev, currentGuess]);
+
+    const updatedGuessedWords = [...guessedWords, currentGuess];
+    setGuessedWords(updatedGuessedWords);
+    if (updatedGuessedWords.length === 6 && currentGuess !== WORD_OF_THE_DAY) {
+      setFeedbackMessage(
+        `Sorry, you've run out of attempts. The correct word was ${WORD_OF_THE_DAY}.`
+      );
+      return;
+    }
+
     setCurrentGuess("");
     setFeedbackMessage("");
     inputRef.current?.focus();
@@ -152,6 +163,7 @@ export const Wordle: React.FC = () => {
           </div>
         )}
       </div>
+      {isCorrectGuess && <ConfettiAnimation />}
     </div>
   );
 };
